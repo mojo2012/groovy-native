@@ -8,9 +8,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<java.version>1.8</java.version>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+		<java.version>11</java.version>
 	</properties>
 
 	<build>
@@ -22,7 +22,6 @@
 				<configuration>
 					<compilerId>groovy-eclipse-compiler</compilerId>
 					<compilerArguments>
-						<indy />
 						<configScript>${pom.basedir}/config.groovy</configScript>
 					</compilerArguments>
 					<failOnWarning>true</failOnWarning>
@@ -59,26 +58,28 @@
 				<version>19.3.0</version>
 				<configuration>
 					<buildArgs>
-						-cp
-						"/Users/matthias.fuchs.lokal/.m2/repository/org/codehaus/groovy/groovy/3.0.0-rc-1/groovy-3.0.0-rc-1.jar"
+						--verbose
+						-cp "${settings.localRepository}/org/codehaus/groovy/groovy/3.0.0-rc-1/groovy-3.0.0-rc-1.jar"
+						-H:+AllowVMInspection
 						--allow-incomplete-classpath
 						--report-unsupported-elements-at-runtime
 						--initialize-at-build-time
 						--enable-all-security-services
-						--delay-class-initialization-to-runtime=io.netty.handler.codec.http.HttpObjectEncoder,org.springframework.core.io.VfsUtils,io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator,io.netty.handler.ssl.ReferenceCountedOpenSslEngine
-						--initialize-at-run-time=org.codehaus.groovy.control.XStreamUtils,groovy.grape.GrapeIvy,org.apache.ivy.core.module.descriptor.DependencyDescriptor
+						--initialize-at-run-time=org.codehaus.groovy.control.XStreamUtils,groovy.grape.GrapeIvy,org.apache.ivy.core.module.descriptor.DependencyDescriptor,io.netty.handler.codec.http.HttpObjectEncoder,org.springframework.core.io.VfsUtils,io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator,io.netty.handler.ssl.ReferenceCountedOpenSslEngine
 						--no-fallback
 						--no-server
-						-H:ConfigurationFileDirectories=out/conf/
+						-J-XX:-UseSharedSpaces 
+						-H:ConfigurationFileDirectories=../src/main/resources/META-INF/native-image/
 						-H:+ReportExceptionStackTraces
 					</buildArgs>
+<!-- 					<skip>true</skip> -->
 				</configuration>
 				<executions>
 					<execution>
 						<goals>
 							<goal>native-image</goal>
 						</goals>
-						<phase>install</phase>
+						<phase>package</phase>
 					</execution>
 				</executions>
 			</plugin>
@@ -93,13 +94,14 @@
 						<include>**/*IT.groovy</include>
 					</includes>
 					<!-- <debugForkedProcess>true</debugForkedProcess> -->
-					<argLine> <!-- jacoco will be injected into the argLine variable -->
-						-agentlib:native-image-agent=config-output-dir=target/conf/
+					<argLine>
+						-agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/
 						-Xverify:none
 						--add-opens java.base/java.lang=ALL-UNNAMED
 						--illegal-access=deny
 					</argLine>
 					<trimStackTrace>false</trimStackTrace>
+<!-- 					<skip>true</skip> -->
 				</configuration>
 				<executions>
 					<execution>
@@ -114,14 +116,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M4</version>
 				<configuration>
 					<includes>
 						<include>**/*Test.java</include>
 						<include>**/*Test.groovy</include>
 					</includes>
 					<!-- <debugForkedProcess>true</debugForkedProcess> -->
-					<argLine> <!-- jacoco will be injected into the argLine variable -->
+					<argLine>
 						-Xverify:none
 						--add-opens java.base/java.lang=ALL-UNNAMED
 						--illegal-access=deny
@@ -136,9 +137,7 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
-
 
 		<pluginManagement>
 			<plugins>
@@ -186,7 +185,6 @@
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
-<!-- 			<classifier>indy</classifier> -->
 			<version>3.0.0-rc-1</version>
 		</dependency>
 

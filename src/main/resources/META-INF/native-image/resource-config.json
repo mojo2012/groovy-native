@@ -1,0 +1,6 @@
+{
+  "resources":[
+    {"pattern":"META-INF/dgminfo"}, 
+    {"pattern":"META-INF/services/org.junit.platform.engine.TestEngine"}
+  ]
+}
